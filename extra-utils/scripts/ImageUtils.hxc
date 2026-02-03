@@ -1,0 +1,31 @@
+import funkin.util.FileUtil;
+
+import funkin.modding.PolymodHandler;
+
+import StringTools;
+import Std; 
+
+class ImageUtils {
+    
+
+    /**
+    * Check if an image exists.
+    */
+    public static function checkImageExists(id:String, ?includeAtlas:Bool) {
+        includeAtlas = includeAtlas != null ? includeAtlas : false;
+        if (id == "") return false;
+        var fileExists = false;
+        var foldersToCheck = [ "assets/" ].concat([ for (mod in PolymodHandler.getAllMods()) "mods/" + mod.id + "/" ]);
+
+        for (i in foldersToCheck) {
+            if (FileUtil.fileExists(i + "images/" + id + ".png") || FileUtil.fileExists(i + "shared/images/" + id + ".png"))
+                fileExists = true;
+
+            if (FileUtil.directoryExists(i + "shared/images/" + id) || FileUtil.directoryExists(i + "/images/" + id))
+                fileExists = true;
+        }
+
+        return fileExists;
+    }
+
+}

@@ -1,0 +1,17 @@
+{
+  "music": "freeplayRandom",
+  "title": "Nova Options API",
+  "description": "An options menu api for V-Slice.",
+  "contributors": [
+    {
+      "name": "Nebula S. Nova",
+      "icon": "nebula",
+      "color": "#9500ff",
+      "role": "Coder",
+      "url": "https://www.youtube.com/@ChinosModded"
+    }
+  ],
+  "api_version": "0.8.1",
+  "mod_version": "1.0.0",
+  "license": "Apache-2.0"
+}

@@ -1,0 +1,31 @@
+{
+  "music": "freeplayRandom",
+  "title": "Gen'z Utils",
+  "description": "Mod description",
+  "contributors": [
+    {
+      "name": "GENZU",
+      "icon": "genzu",
+      "color": "#ff9ecf",
+      "roles": "Coder",
+      "url": "https://www.youtube.com/@_genzu"
+    },
+    {
+      "name": "Nebula S. Nova",
+      "icon": "nebula",
+      "color": "#9500ff",
+      "role": "Coder",
+      "url": "https://www.youtube.com/@ChinosModded"
+    },
+    {
+      "name": "Miyo Sho",
+      "icon": "yri5",
+      "color": "#b7d2e6",
+      "role": "Coder",
+      "url": "https://github.com/yuri-kiss/"
+    }
+  ],
+  "api_version": "0.8.0",
+  "mod_version": "1.0.0",
+  "license": "Apache-2.0"
+}

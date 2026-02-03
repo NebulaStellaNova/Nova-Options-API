@@ -1,0 +1,30 @@
+import Std;
+import Type;
+import haxe.Json;
+import flixel.FlxG;
+import flixel.util.FlxSave;
+import funkin.util.FileUtil;
+import flixel.util.FlxTimer;
+import funkin.input.Controls;
+import funkin.play.PlayState;
+import polymod.fs.SysFileSystem;
+import funkin.modding.module.Module;
+import funkin.modding.PolymodHandler;
+import funkin.ui.options.OptionsState;
+import funkin.ui.options.PreferencesMenu;
+
+class OptionsAPI extends Module {
+
+    public function new() {
+        super("OptionsAPI");
+    }
+
+    public static function getPreference(saveSlot:String, key:String) {
+        return SaveUtil.checkForSave(saveSlot).get(key).get('data');
+    }
+
+    public static function setPreference(saveSlot:String, key:String, value:Dynamic) {
+        SaveUtil.writeToSave(saveSlot, key, { data: value });
+    }
+
+}

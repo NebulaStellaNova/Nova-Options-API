@@ -1,0 +1,70 @@
+import String;
+import StringTools;
+import flixel.FlxG;
+import flixel.FlxSprite;
+import funkin.play.PlayState;
+import funkin.play.character.BaseCharacter;
+import flixel.animation.FlxAnimationController;
+
+class AnimUtils {
+
+    /**
+    * Plays an animation on a character, the right way.
+    */
+    public static function charPlayAnim(character:BaseCharacter, name:String, ?force:Bool) {
+        character.canPlayOtherAnims = true;
+        if (!character.ignoreExclusionPref.contains(name))
+            character.ignoreExclusionPref.push(name);
+        character.playAnimation(name, force ?? false, force ?? false);
+    }
+
+    /**
+    * Plays an animation with your desired offset.
+    * NOTE: overrides current object's offset variable.
+    */
+    public static function offsetPlayAnim(object:FlxSprite, anim:String, offset:Array<Int>, ?force:Bool) {
+        object.offset.x = -offset[0];
+        object.offset.y = -offset[1];
+        if (object?.playAnimation != null) {
+            object.playAnimation(anim, force ?? false, force ?? false);
+        } else {
+            object.animation.play(anim, force ?? false);
+        }
+    }
+
+    /**
+    * Takes animations from jsonArray and adds them to FlxAnimationController.    
+    */
+    public static function animationFromJson(animation:FlxAnimationController, jsonData:Array) {
+        for (i in jsonData) {
+            if (i.frameIndices.length > 0) {
+                animation.addByIndices(i.name, i.prefix, i.frameIndices, null, i?.frameRate ?? 24, i?.looped ?? false);
+            } else {
+                animation.addByPrefix(i.name, i.prefix, i?.frameRate ?? 24, i?.looped ?? false);
+            }
+        }
+    }
+
+    /**
+    * Convert string such as "0, 1, 2, 3" or "0,1,2,3" to [0,1,2,3].
+    */
+    public static function stringToIndices(string:String):Array<Int> {
+        if (string == null) return [];
+        string = StringTools.replace(string, " ", "");
+        var split = string.split(",");
+        var indices = [];
+        for (i in split) {
+            if (Std.parseInt(i) != null)
+                indices.push(Std.parseInt(i));
+        }
+        return indices;
+    }
+
+    /**
+    * Convert indicies to string.
+    */
+    public static function indiciesToString(array:Array) {
+        return array.join(", ");
+    }
+
+}

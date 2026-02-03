@@ -1,0 +1,130 @@
+import Std;
+import Type;
+import haxe.Json;
+import flixel.FlxG;
+import flixel.util.FlxSave;
+import funkin.util.FileUtil;
+import flixel.util.FlxTimer;
+import funkin.input.Controls;
+import funkin.play.PlayState;
+import polymod.fs.SysFileSystem;
+import funkin.modding.module.Module;
+import funkin.modding.PolymodHandler;
+import funkin.ui.options.OptionsState;
+import funkin.ui.options.PreferencesMenu;
+
+class OptionsStateInjection extends Module {
+
+    public var pages = [];
+
+    public function new() {
+        super("OptionsStateInjection");
+    }
+
+    
+    public function onStateChangeEnd(event:StateChangeScriptEvent){
+        super.onStateChangeEnd(event);
+        if (Std.isOfType(event.targetState, OptionsState))
+            onLoaded();
+    }
+    
+    public function onLoaded() {
+        var options = OptionsState.instance.optionsCodex.pages.get("options");
+        var exit = options.items.byName["EXIT"];
+        options.items.remove(exit);
+
+        for (index=>i in pages) {
+            var menu = createMenu(i, index);
+            menu.y = exit.y;
+            menu.y += 100*index;
+            menu.ID = index;
+        }
+
+        exit.y += 100 * (pages.length);
+        options.items.add(exit);
+    }
+
+
+
+    function createMenu(menuData, index) {
+        var options = OptionsState.instance.optionsCodex.pages.get("options");
+        var modOptions = options.createItem(menuData.title, ()->{
+            OptionsState.instance.optionsCodex.switchPage(OptionsState.instance.optionsCodex.pages.get("options").items.selectedItem.label.text + (OptionsState.instance.optionsCodex.pages.get("options").items.selectedItem.ID + ""));
+        }/* ()->OptionsState.instance.optionsCodex.switchPage(menuData.title + (index+"")) */);
+
+        var modOptionsMenu = getBlankMenu(menuData.title + (index+""));
+
+        // var setCallback = (value)->OptionsAPI.setPreference(menuData.saveSlot, i.id, value);
+        var setCallback = (value)->{
+            var menuData = pages[OptionsState.instance.optionsCodex.pages.get("options").items.selectedItem.ID];
+            var optionID;
+            for (i in menuData.options) {
+                if (i.name == OptionsState.instance.optionsCodex.pages.get(
+                    OptionsState.instance.optionsCodex.pages.get("options").items.selectedItem.label.text + (OptionsState.instance.optionsCodex.pages.get("options").items.selectedItem.ID + "")
+                ).items.selectedItem.label.text)
+                    optionID = i.id;
+            }
+
+            OptionsAPI.setPreference(menuData.saveSlot, optionID, value);
+        }
+
+        for (i in menuData.options) {
+            switch (i.type) {
+                case "checkbox":
+                    modOptionsMenu.createPrefItemCheckbox(i.name, i.description, setCallback, OptionsAPI.getPreference(menuData.saveSlot, i.id) ?? i.defaultValue ?? false);
+                case "number":
+                    modOptionsMenu.createPrefItemNumber(i.name, i.description, setCallback, null, OptionsAPI.getPreference(menuData.saveSlot, i.id) ?? i.defaultValue ?? false, i.min ?? null, i.max ?? null, i.step ?? 1, i.precision ?? 1);
+                case "percent":
+                    modOptionsMenu.createPrefItemPercentage(i.name, i.description, setCallback, OptionsAPI.getPreference(menuData.saveSlot, i.id) ?? i.defaultValue ?? false, i.min ?? null, i.max);
+                case "enum":
+                    var options = [
+                        "init" => true
+                    ];
+                    options.clear();
+                    for (i in i.options) options.set(i.key, i.value);
+
+                    modOptionsMenu.createPrefItemEnum(i.name, i.description, options, (value)->{ OptionsAPI.setPreference(menuData.saveSlot, i.id, value); }, i.defaultValue);
+            }
+        }
+
+        modOptionsMenu.items.selectItem(0);
+        return modOptions;
+        // modOptionsMenu.createPrefItemCheckbox("Disable Shaders", "If enabled, Disables all shaders for the mod.", function(value){});
+
+    }
+
+    function getBlankMenu(name:String) {
+        var modOptionsMenu = OptionsState.instance.optionsCodex.addPage(name, new PreferencesMenu());
+        modOptionsMenu.preferenceDesc = [];
+        modOptionsMenu.onExit.add(function(){
+            OptionsState.instance.optionsCodex.switchPage("options");
+        });
+        for(shit in modOptionsMenu.items){
+            shit.destroy();
+        }
+        for(shit in modOptionsMenu.preferenceItems){
+            shit.destroy();
+        }
+        modOptionsMenu.items.clear();
+        modOptionsMenu.preferenceItems.clear();
+
+        return modOptionsMenu;
+    }
+
+    function onCreate(event) {
+        super.onCreate(event);
+        for (i in PolymodHandler.getAllMods()) {
+            if (FileUtil.fileExists("mods/" + i.id + "/data/config/options.json") && i.title != "Nova Options API") {
+                pages = pages.concat(Json.parse(FileUtil.readStringFromPath("mods/" + i.id + "/data/config/options.json")));
+            }
+        }
+
+        for (i in pages) {
+            SaveUtil.createSave(i.saveSlot);
+            for (option in i.options) {
+                if (SaveUtil.checkForSave(i.saveSlot).get(option.id) == null)
+                    SaveUtil.writeToSave(i.saveSlot, option.id, { data: option.defaultValue });
+            }
+        }
+    }
+}

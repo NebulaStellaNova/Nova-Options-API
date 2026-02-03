@@ -1,0 +1,181 @@
+import Std;
+import String;
+import Reflect;
+import funkin.save.Save;
+import haxe.ds.StringMap;
+
+class SaveUtil {
+
+    /**
+   * Creates a save with the name you entered.
+   * It will error if there is a save slot with that name.
+   * 
+   * Example: SaveUtil.createSave('SaveUtilTest');
+   */
+    public static function createSave(slot:String) {
+        var save = Save.instance.modOptions;
+        if (save.get(slot) == null) {
+            trace('Creating Save Slot for: ' + slot);
+            save.set(slot, new StringMap());
+            flush();
+            trace('Save Slot Created for: ' + slot);
+            return;
+        }
+        trace('[ERROR] Save Slot for "'  + slot + '" already exists.' );
+    }
+
+    /**
+   * Writes to the save slot with the data you entered.
+   * It will error if there save you try to write to does not exist.
+   * 
+   * Example: SaveUtil.writeToSave('SaveUtilTest', 'debug', 'ABCD');
+   * Example 2: SaveUtil.writeToSave('SaveUtilTest', 'debug2', { title: 'Dance Party', key: 'dance_party});
+   */
+    public static function writeToSave(slot:String, data:Dynamic, value:Dynamic) {
+        var save = Save.instance.modOptions;
+        if (save.get(slot) == null) {
+            trace('[ERROR] Current Save Slot does not exist.');
+            return;
+        }
+
+        if (Reflect.isObject(value) && !Std.isOfType(value, StringMap) && !Std.isOfType(value, String)) {
+            var map = new StringMap();
+            for (field in Reflect.fields(value)) {
+                map.set(field, Reflect.field(value, field));
+            }
+            value = map;
+            // trace(map);
+        }
+        trace("Writing to " + slot + " with " + data +  " => " + value);
+        save.get(slot).set(data, value);
+        flush();
+    }
+
+    /**
+   * Get a specific data value form the slot and data you entered.
+   * It will error if it can't find information you entered.
+   * 
+   * Example: SaveUtil.getFromSave('SaveUtilTest', 'debug');
+   */
+    public static function getFromSave(slot:String, data:Dynamic):Dynamic {
+        var save = Save.instance.modOptions;
+        if (save.get(slot) == null) {
+            trace("[ERROR] Can't find Save Slot: " + slot);
+            return null;
+        }
+
+        if (save.get(slot).get(data) == null) {
+            trace(" [ERROR] Can't find Save Data for: " + slot + " => " + data);
+            return null;
+        }
+
+        var entry = save.get(slot).get(data);
+        if (Std.isOfType(entry, StringMap)) {
+            var hybrid = {};
+
+            for (key in entry.keys()) {
+                Reflect.setField(hybrid, key, entry.get(key));
+            }
+
+            Reflect.setField(hybrid, "get", function(k:String) {
+                return entry.get(k);
+            });
+
+            return hybrid;
+        }
+        return entry;
+    }
+
+    /**
+   * Checks is for the save you've entered Will trace all it's contetns to the consol.
+   * It will error if it can't find the Save Slot.
+   * 
+   * Example: SaveUtil.checkForSave('SaveUtilTest');
+   */
+    public static function checkForSave(slot:String) {
+        var save = Save.instance.modOptions;
+        if (save.get(slot) == null) {
+            trace('[ERROR] Could not find Save Slot for: ' + slot);
+            return;
+        } 
+        trace('Found Save Flot for ' + slot + ": " + save.get(slot));
+        return save.get(slot);
+    }
+
+    /**
+   * Clones the save you've entered to a different slot.
+   * It will error if it can't find the Save Slot or if you try to clone something to the same name.
+   * 
+   * Example: SaveUtil.cloneSave('SaveUtilTest', SaveUtilTest_2');
+   */
+    public static function cloneSave(oldSlot:String, newSlot:String) {
+        var save = Save.instance.modOptions;
+        if (save.get(oldSlot) == null) {
+            trace('[ERROR] The Save you are tring to clone does not exist.');
+            return;
+        } 
+        
+        if (save.get(newSlot) != null) {
+            trace("[ERROR] Can't clone save as " + newSlot + " already exists.");
+            return;
+        } 
+        
+        if (oldSlot == newSlot || newSlot == oldSlot) {
+            trace("[ERROR] The Old Slot and New Slot can not have the same name.");
+            return;
+        }
+
+        trace("[TEST] All is valid. Would Clone the save.");
+        
+    }
+
+    /**
+   * Clears the save you've entered.
+   * It will error if it can't find the save slot.
+   * 
+   * Example: SaveUtil.clearSave('SaveUtilTest');
+   * 
+   */
+    public static function clearSave(slot:String) {
+        var save = Save.instance.modOptions;
+        if (save.get(slot) == null) {
+            trace('There is no Save to clear. ' + slot + " dies not exists.");
+            return;
+        } 
+
+        /* save.set(slot, new StringMap());
+        flush(); */
+
+        trace("The Save " + '"' + slot + '" ' + "has been cleared");
+        
+    }
+
+    /**
+   * Deletes the save slot you've entered.
+   * It will error if it can't find the save you wish to delete.
+   * 
+   * Example: SaveUtil.deleteSave('SaveUtilTest');
+   */
+    public static function deleteSave(slot:String) {
+        var save = Save.instance.modOptions;
+        if (save.get(slot) == null) {
+            trace("[ERROR] Can't delete " + slot + " as it does not exist.");
+            return;
+        } 
+        
+        trace("Deleting " + slot + "..." );
+        save.remove(slot);
+        trace(slot + " has been deleted.");
+        flush();
+    }
+
+    /**
+   * Flushes the Save.
+   * This is needed to make writing to the save possible.
+   * 
+   * Example: SaveUtil.flush();
+   */
+    public static function flush() {
+        Save.system.flush();
+    }
+}
