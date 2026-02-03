@@ -1,13 +1,6 @@
 import Std;
-import Type;
 import haxe.Json;
-import flixel.FlxG;
-import flixel.util.FlxSave;
 import funkin.util.FileUtil;
-import flixel.util.FlxTimer;
-import funkin.input.Controls;
-import funkin.play.PlayState;
-import polymod.fs.SysFileSystem;
 import funkin.modding.module.Module;
 import funkin.modding.PolymodHandler;
 import funkin.ui.options.OptionsState;
