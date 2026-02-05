@@ -76,7 +76,7 @@ class OptionsStateInjection extends Module {
                     options.clear();
                     for (i in i.options) options.set(i.key, i.value);
 
-                    modOptionsMenu.createPrefItemEnum(i.name, i.description, options, (value)->{ OptionsAPI.setPreference(menuData.saveSlot, i.id, value); }, i.defaultValue);
+                    modOptionsMenu.createPrefItemEnum(i.name, i.description, options, setCallback, i.defaultValue);
             }
         }
 
