@@ -1,5 +1,6 @@
 import Std;
 import haxe.Json;
+import flixel.FlxG;
 import funkin.util.FileUtil;
 import funkin.modding.module.Module;
 import funkin.modding.PolymodHandler;
@@ -23,18 +24,31 @@ class OptionsStateInjection extends Module {
     
     public function onLoaded() {
         var options = OptionsState.instance.optionsCodex.pages.get("options");
-        var exit = options.items.byName["EXIT"];
-        options.items.remove(exit);
+        if (!FlxG.onMobile) {
+            var exit = options.items.byName["EXIT"];
+            options.items.remove(exit);
+    
+            for (index=>i in pages) {
+                var menu = createMenu(i, index);
+                menu.y = exit.y;
+                menu.y += 100*index;
+                menu.ID = index;
+            }
+    
+            exit.y += 100 * (pages.length);
+            options.items.add(exit);
+        } else {
+            var lastButton = options.items.members.copy().pop();
+            
+            for (index=>i in pages) {
+                var menu = createMenu(i, index);
+                menu.y = lastButton.y;
+                menu.y += 100*index;
+                menu.y += 100;
+                menu.ID = index;
+            }
 
-        for (index=>i in pages) {
-            var menu = createMenu(i, index);
-            menu.y = exit.y;
-            menu.y += 100*index;
-            menu.ID = index;
         }
-
-        exit.y += 100 * (pages.length);
-        options.items.add(exit);
     }
 
 
@@ -107,8 +121,8 @@ class OptionsStateInjection extends Module {
     function onCreate(event) {
         super.onCreate(event);
         for (i in PolymodHandler.getAllMods()) {
-            if (FileUtil.fileExists("mods/" + i.id + "/data/config/options.json") && i.title != "Nova Options API") {
-                pages = pages.concat(Json.parse(FileUtil.readStringFromPath("mods/" + i.id + "/data/config/options.json")));
+            if (FileUtil.fileExists(PolymodHandler.MOD_FOLDER + "/" + i.id + "/data/config/options.json") && i.title != "Nova Options API") {
+                pages = pages.concat(Json.parse(FileUtil.readStringFromPath(PolymodHandler.MOD_FOLDER + "/" + i.id + "/data/config/options.json")));
             }
         }
 

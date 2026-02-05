@@ -7,7 +7,7 @@ class OptionsAPI extends Module {
     }
 
     public static function getPreference(saveSlot:String, key:String) {
-        return SaveUtil.checkForSave(saveSlot).get(key).get('data');
+        return SaveUtil.checkForSave(saveSlot)?.get(key)?.get('data');
     }
 
     public static function setPreference(saveSlot:String, key:String, value:Dynamic) {
